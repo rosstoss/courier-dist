@@ -7,20 +7,20 @@ COURIER_ROOT="$HOME/.courier"
 APP_DIR="$COURIER_ROOT/app"
 BIN_DIR="$COURIER_ROOT/bin"
 
-CYAN='\033[1;36m'
-BLUE='\033[1;34m'
-RED='\033[0;31m'
-NC='\033[0m'
+CYAN=$'\033[1;36m'
+BLUE=$'\033[1;34m'
+RED=$'\033[0;31m'
+NC=$'\033[0m'
 
 spinner() {
-  local pid=$1
+  local pid="$1"
   local delay=0.1
-  local spinstr='|/-\'
-  while [ "$(ps -p $pid -o state= 2>/dev/null)" ]; do
-    local temp=${spinstr#?}
+  local spinstr='|/-\\'
+  while [ "$(ps -p "$pid" -o state= 2>/dev/null)" ]; do
+    local temp="${spinstr#?}"
     printf " [%c]  " "$spinstr"
-    local spinstr=$temp${spinstr%"$temp"}
-    sleep $delay
+    local spinstr="$temp${spinstr%"$temp"}"
+    sleep "$delay"
     printf "\b\b\b\b\b\b"
   done
   printf "    \b\b\b\b"
@@ -62,7 +62,7 @@ for CONFIG in "$HOME/.zshrc" "$HOME/.bash_profile" "$HOME/.bashrc"; do
     if [ -f "$CONFIG" ]; then
         if ! grep -q "$BIN_DIR" "$CONFIG" 2>/dev/null; then
             echo "${BLUE}[+]${NC} Adding Courier to PATH in $CONFIG..."
-            printf "\n# Courier AI Infrastructure\nexport PATH=\"$BIN_DIR:\$PATH\"\n" >> "$CONFIG"
+            printf "\n# Courier AI Infrastructure\nexport PATH=\"%s:\$PATH\"\n" "$BIN_DIR" >> "$CONFIG"
         fi
     fi
 done
@@ -82,8 +82,8 @@ rm -rf "$APP_DIR"
 mkdir -p "$APP_DIR"
 tar -xz -f "$TMP_TAR" -C "$APP_DIR" &
 EXTRACT_PID=$!
-spinner $EXTRACT_PID
-rm "$TMP_TAR"
+spinner "$EXTRACT_PID"
+rm -rf "$TMP_TAR"
 echo " Done."
 
 echo "${BLUE}[+]${NC} Finalizing Installation..."
@@ -97,7 +97,7 @@ chmod +x "$APP_DIR/$BINARY_NAME"
 echo "${BLUE}[+]${NC} Clearing macOS security flags..."
 ( xattr -dr com.apple.quarantine "$APP_DIR" 2>/dev/null || true ) &
 XATTR_PID=$!
-spinner $XATTR_PID
+spinner "$XATTR_PID"
 echo " Done."
 
 # Re-mount to clear filesystem attributes
