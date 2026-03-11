@@ -101,7 +101,7 @@ mv "${APP_DIR}_tmp" "$APP_DIR"
 export PATH="$BIN_DIR:$PATH"
 hash -r 2>/dev/null || true
 
-echo -n "${BLUE}[+]${NC} Launching Courier AI Engine... "
+echo -n "${BLUE}[+]${NC} Launching Courier Engine. This may take a while..."
 (
   delay=0.1
   spinstr='|/-\\'
