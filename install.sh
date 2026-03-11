@@ -54,10 +54,8 @@ fi
 mkdir -p "$APP_DIR"
 mkdir -p "$BIN_DIR"
 
-# Add Courier to PATH for the current shell session
 export PATH="$BIN_DIR:$PATH"
 
-# Persistent PATH addition for Zsh and Bash
 for CONFIG in "$HOME/.zshrc" "$HOME/.bash_profile" "$HOME/.bashrc"; do
     if [ -f "$CONFIG" ]; then
         if ! grep -q "$BIN_DIR" "$CONFIG" 2>/dev/null; then
@@ -76,7 +74,6 @@ TMP_TAR="/tmp/courier_download.tar.gz"
 echo "${BLUE}[+]${NC} Downloading bundle..."
 curl -# -L "$DOWNLOAD_URL" -o "$TMP_TAR"
 
-# Clear and Refresh extraction point
 echo "${BLUE}[+]${NC} Extracting bundle..."
 rm -rf "$APP_DIR"
 mkdir -p "$APP_DIR"
@@ -88,7 +85,6 @@ echo " Done."
 
 echo "${BLUE}[+]${NC} Finalizing Installation..."
 
-# Clear existing link if it's a directory (prevents nested link)
 [ -L "$BIN_DIR/$BINARY_NAME" ] && rm "$BIN_DIR/$BINARY_NAME"
 
 ln -sf "$APP_DIR/$BINARY_NAME" "$BIN_DIR/$BINARY_NAME"
@@ -100,14 +96,23 @@ XATTR_PID=$!
 spinner "$XATTR_PID"
 echo " Done."
 
-# Re-mount to clear filesystem attributes
 mv "$APP_DIR" "${APP_DIR}_tmp"
 mv "${APP_DIR}_tmp" "$APP_DIR"
-# Refresh the PATH in the current session
 export PATH="$BIN_DIR:$PATH"
 hash -r 2>/dev/null || true
 
-echo "${BLUE}[+]${NC} Launching Setup Wizard..."
-sleep 1
+echo -n "${BLUE}[+]${NC} Launching Courier AI Engine... "
+(
+  delay=0.1
+  spinstr='|/-\\'
+  while true; do
+    temp="${spinstr#?}"
+    printf " [%c]  " "$spinstr"
+    spinstr="$temp${spinstr%"$temp"}"
+    sleep "$delay"
+    printf "\b\b\b\b\b\b"
+  done
+) &
+export COURIER_INSTALL_SPINNER_PID=$!
 
 exec "$BIN_DIR/$BINARY_NAME" --setup </dev/tty
