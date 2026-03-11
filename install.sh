@@ -105,7 +105,7 @@ echo -n "${BLUE}[+]${NC} Launching Courier Engine. This may take a while..."
 (
   delay=0.1
   spinstr='|/-\\'
-  for ((i=0; i<600; i++)); do
+  for ((i=0; i<750; i++)); do
     temp="${spinstr#?}"
     printf " [%c]  " "$spinstr"
     spinstr="$temp${spinstr%"$temp"}"
