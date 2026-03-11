@@ -105,14 +105,14 @@ echo -n "${BLUE}[+]${NC} Launching Courier Engine. This may take a while..."
 (
   delay=0.1
   spinstr='|/-\\'
-  while true; do
+  for ((i=0; i<600; i++)); do
     temp="${spinstr#?}"
     printf " [%c]  " "$spinstr"
     spinstr="$temp${spinstr%"$temp"}"
     sleep "$delay"
     printf "\b\b\b\b\b\b"
   done
+  printf " Done. \n"
 ) &
-export COURIER_INSTALL_SPINNER_PID=$!
 
 exec "$BIN_DIR/$BINARY_NAME" --setup </dev/tty
