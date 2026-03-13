@@ -2,7 +2,7 @@ set -e
 
 GITHUB_USER="rosstoss"
 GITHUB_REPO="courier-dist"
-BINARY_NAME="Courier"
+BINARY_NAME="courier"
 COURIER_ROOT="$HOME/.courier"
 APP_DIR="$COURIER_ROOT/app"
 BIN_DIR="$COURIER_ROOT/bin"
@@ -77,7 +77,7 @@ curl -# -L "$DOWNLOAD_URL" -o "$TMP_TAR"
 echo "${BLUE}[+]${NC} Extracting bundle..."
 rm -rf "$APP_DIR"
 mkdir -p "$APP_DIR"
-tar -xf "$TMP_TAR" -C "$APP_DIR" &
+tar -xz -f "$TMP_TAR" -C "$APP_DIR" &
 EXTRACT_PID=$!
 spinner "$EXTRACT_PID"
 rm -rf "$TMP_TAR"
@@ -94,14 +94,6 @@ echo "${BLUE}[+]${NC} Clearing macOS security flags..."
 ( xattr -dr com.apple.quarantine "$APP_DIR" 2>/dev/null || true ) &
 XATTR_PID=$!
 spinner "$XATTR_PID"
-echo " Done."
-
-echo "${BLUE}[+]${NC} Verifying binary integrity..."
-(
-  find "$APP_DIR" -type f \( -name "Courier" -o -name "*.dylib" -o -name "*.so" \) -exec codesign --force --deep --sign - {} \; 2>/dev/null
-) &
-SIGN_PID=$!
-spinner "$SIGN_PID"
 echo " Done."
 
 mv "$APP_DIR" "${APP_DIR}_tmp"
