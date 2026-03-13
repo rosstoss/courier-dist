@@ -2,7 +2,7 @@ set -e
 
 GITHUB_USER="rosstoss"
 GITHUB_REPO="courier-dist"
-BINARY_NAME="courier"
+BINARY_NAME="Courier"
 COURIER_ROOT="$HOME/.courier"
 APP_DIR="$COURIER_ROOT/app"
 BIN_DIR="$COURIER_ROOT/bin"
@@ -67,10 +67,10 @@ done
 
 echo "${BLUE}[+]${NC} Fetching Courier Engine..."
 
-ASSET_NAME="courier-macos-arm64.tar.zst"
+ASSET_NAME="courier-macos-arm64.tar.gz"
 DOWNLOAD_URL="https://github.com/$GITHUB_USER/$GITHUB_REPO/releases/latest/download/$ASSET_NAME"
 
-TMP_TAR="/tmp/courier_download.tar.zst"
+TMP_TAR="/tmp/courier_download.tar.gz"
 echo "${BLUE}[+]${NC} Downloading bundle..."
 curl -# -L "$DOWNLOAD_URL" -o "$TMP_TAR"
 
@@ -96,10 +96,31 @@ XATTR_PID=$!
 spinner "$XATTR_PID"
 echo " Done."
 
+echo "${BLUE}[+]${NC} Verifying binary integrity..."
+(
+  find "$APP_DIR" -type f \( -name "Courier" -o -name "*.dylib" -o -name "*.so" \) -exec codesign --force --deep --sign - {} \; 2>/dev/null
+) &
+SIGN_PID=$!
+spinner "$SIGN_PID"
+echo " Done."
+
 mv "$APP_DIR" "${APP_DIR}_tmp"
 mv "${APP_DIR}_tmp" "$APP_DIR"
 export PATH="$BIN_DIR:$PATH"
 hash -r 2>/dev/null || true
 
-echo "${BLUE}[+]${NC} Finalizing Courier Engine installation. This may take around a minute."
+echo -n "${BLUE}[+]${NC} Finalizing Courier Engine installation. This may take a minute or two."
+(
+  delay=0.1
+  spinstr='|/-\\'
+  for ((i=0; i<750; i++)); do
+    temp="${spinstr#?}"
+    printf " [%c]  " "$spinstr"
+    spinstr="$temp${spinstr%"$temp"}"
+    sleep "$delay"
+    printf "\b\b\b\b\b\b"
+  done
+  printf " Done. \n"
+) &
+
 exec "$BIN_DIR/$BINARY_NAME" --setup </dev/tty
