@@ -101,6 +101,7 @@ mv "${APP_DIR}_tmp" "$APP_DIR"
 export PATH="$BIN_DIR:$PATH"
 hash -r 2>/dev/null || true
 
+#Temp
 echo -n "${BLUE}[+]${NC} Finalizing Courier Engine installation. This may take a minute or two."
 (
   delay=0.1
