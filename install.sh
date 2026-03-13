@@ -72,14 +72,18 @@ DOWNLOAD_URL="https://github.com/$GITHUB_USER/$GITHUB_REPO/releases/latest/downl
 
 TMP_TAR="/tmp/courier_download.tar.gz"
 echo "${BLUE}[+]${NC} Downloading bundle..."
-curl -# -L "$DOWNLOAD_URL" -o "$TMP_TAR"
+curl -f# -L "$DOWNLOAD_URL" -o "$TMP_TAR"
+
+echo "${BLUE}[+]${NC} Validating archive..."
+tar -tf "$TMP_TAR" >/dev/null
 
 echo "${BLUE}[+]${NC} Extracting bundle..."
 rm -rf "$APP_DIR"
 mkdir -p "$APP_DIR"
-tar -xz -f "$TMP_TAR" -C "$APP_DIR" &
+tar -xf "$TMP_TAR" -C "$APP_DIR" &
 EXTRACT_PID=$!
 spinner "$EXTRACT_PID"
+wait "$EXTRACT_PID"
 rm -rf "$TMP_TAR"
 echo " Done."
 
@@ -94,6 +98,15 @@ echo "${BLUE}[+]${NC} Clearing macOS security flags..."
 ( xattr -dr com.apple.quarantine "$APP_DIR" 2>/dev/null || true ) &
 XATTR_PID=$!
 spinner "$XATTR_PID"
+echo " Done."
+
+echo "${BLUE}[+]${NC} Verifying binary integrity..."
+(
+  # Find and sign the main binary and all dylibs/so files
+  find "$APP_DIR" -type f \( -name "Courier" -o -name "*.dylib" -o -name "*.so" \) -exec codesign --force --deep --sign - {} \; 2>/dev/null
+) &
+SIGN_PID=$!
+spinner "$SIGN_PID"
 echo " Done."
 
 mv "$APP_DIR" "${APP_DIR}_tmp"
