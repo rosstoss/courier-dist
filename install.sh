@@ -67,17 +67,17 @@ done
 
 echo "${BLUE}[+]${NC} Fetching Courier Engine..."
 
-ASSET_NAME="courier-macos-arm64.tar.gz"
+ASSET_NAME="courier-macos-arm64.tar.zst"
 DOWNLOAD_URL="https://github.com/$GITHUB_USER/$GITHUB_REPO/releases/latest/download/$ASSET_NAME"
 
-TMP_TAR="/tmp/courier_download.tar.gz"
+TMP_TAR="/tmp/courier_download.tar.zst"
 echo "${BLUE}[+]${NC} Downloading bundle..."
 curl -# -L "$DOWNLOAD_URL" -o "$TMP_TAR"
 
 echo "${BLUE}[+]${NC} Extracting bundle..."
 rm -rf "$APP_DIR"
 mkdir -p "$APP_DIR"
-tar -xz -f "$TMP_TAR" -C "$APP_DIR" &
+tar -xf "$TMP_TAR" -C "$APP_DIR" &
 EXTRACT_PID=$!
 spinner "$EXTRACT_PID"
 rm -rf "$TMP_TAR"
