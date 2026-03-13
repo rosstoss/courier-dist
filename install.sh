@@ -67,17 +67,17 @@ done
 
 echo "${BLUE}[+]${NC} Fetching Courier Engine..."
 
-ASSET_NAME="courier-macos-arm64.tar.gz"
+ASSET_NAME="courier-macos-arm64.tar.zst"
 DOWNLOAD_URL="https://github.com/$GITHUB_USER/$GITHUB_REPO/releases/latest/download/$ASSET_NAME"
 
-TMP_TAR="/tmp/courier_download.tar.gz"
+TMP_TAR="/tmp/courier_download.tar.zst"
 echo "${BLUE}[+]${NC} Downloading bundle..."
 curl -# -L "$DOWNLOAD_URL" -o "$TMP_TAR"
 
 echo "${BLUE}[+]${NC} Extracting bundle..."
 rm -rf "$APP_DIR"
 mkdir -p "$APP_DIR"
-tar -xz -f "$TMP_TAR" -C "$APP_DIR" &
+tar -xf "$TMP_TAR" -C "$APP_DIR" &
 EXTRACT_PID=$!
 spinner "$EXTRACT_PID"
 rm -rf "$TMP_TAR"
@@ -101,19 +101,5 @@ mv "${APP_DIR}_tmp" "$APP_DIR"
 export PATH="$BIN_DIR:$PATH"
 hash -r 2>/dev/null || true
 
-#Temp
-echo -n "${BLUE}[+]${NC} Finalizing Courier Engine installation. This may take a minute or two."
-(
-  delay=0.1
-  spinstr='|/-\\'
-  for ((i=0; i<750; i++)); do
-    temp="${spinstr#?}"
-    printf " [%c]  " "$spinstr"
-    spinstr="$temp${spinstr%"$temp"}"
-    sleep "$delay"
-    printf "\b\b\b\b\b\b"
-  done
-  printf " Done. \n"
-) &
-
+echo "${BLUE}[+]${NC} Finalizing Courier Engine installation. This may take around a minute."
 exec "$BIN_DIR/$BINARY_NAME" --setup </dev/tty
