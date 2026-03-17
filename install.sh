@@ -67,10 +67,10 @@ done
 
 echo "${BLUE}[+]${NC} Fetching Courier Engine..."
 
-ASSET_NAME="courier-macos-arm64.tar.zst"
+ASSET_NAME="courier-macos-arm64.tar.gz"
 DOWNLOAD_URL="https://github.com/$GITHUB_USER/$GITHUB_REPO/releases/latest/download/$ASSET_NAME"
 
-TMP_TAR="/tmp/courier_download.tar.zst"
+TMP_TAR="/tmp/courier_download.tar.gz"
 echo "${BLUE}[+]${NC} Downloading bundle..."
 curl -f# -L "$DOWNLOAD_URL" -o "$TMP_TAR"
 
