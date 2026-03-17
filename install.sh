@@ -56,14 +56,25 @@ mkdir -p "$BIN_DIR"
 
 export PATH="$BIN_DIR:$PATH"
 
-for CONFIG in "$HOME/.zshrc" "$HOME/.bash_profile" "$HOME/.bashrc"; do
-    if [ -f "$CONFIG" ]; then
-        if ! grep -q "$BIN_DIR" "$CONFIG" 2>/dev/null; then
-            echo "${BLUE}[+]${NC} Adding Courier to PATH in $CONFIG..."
-            printf "\n# Courier AI Infrastructure\nexport PATH=\"%s:\$PATH\"\n" "$BIN_DIR" >> "$CONFIG"
-        fi
-    fi
-done
+SHELL_CONFIG="$HOME/.zshrc"
+if [[ "$SHELL" == *"bash"* ]]; then
+  SHELL_CONFIG="$HOME/.bash_profile"
+fi
+
+echo "${BLUE}[+]${NC} Checking PATH configuration..."
+
+if [ ! -f "$SHELL_CONFIG" ]; then
+  echo "${BLUE}[+]${NC} Creating $SHELL_CONFIG..."
+  touch "$SHELL_CONFIG"
+fi
+
+if ! grep -q "$BIN_DIR" "$SHELL_CONFIG" 2>/dev/null; then
+    echo "${BLUE}[+]${NC} Adding Courier to PATH in $SHELL_CONFIG..."
+    printf "\n# Courier AI Infrastructure\nexport PATH=\"%s:\$PATH\"\n" "$BIN_DIR" >> "$SHELL_CONFIG"
+    echo "${BLUE}[+]${NC} Note: You may need to restart your terminal or run 'source $SHELL_CONFIG' to use the 'courier' command."
+else
+    echo "${BLUE}[+]${NC} Courier is already in your PATH."
+fi
 
 echo "${BLUE}[+]${NC} Fetching Courier Engine..."
 
@@ -102,7 +113,6 @@ echo " Done."
 
 echo "${BLUE}[+]${NC} Verifying binary integrity..."
 (
-  # Find and sign the main binary and all dylibs/so files
   find "$APP_DIR" -type f \( -name "Courier" -o -name "*.dylib" -o -name "*.so" \) -exec codesign --force --deep --sign - {} \; 2>/dev/null
 ) &
 SIGN_PID=$!
