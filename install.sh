@@ -128,7 +128,7 @@ echo -n "${BLUE}[+]${NC} Finalizing Courier Engine installation. This may take a
 (
   delay=0.1
   spinstr='|/-\\'
-  for ((i=0; i<750; i++)); do
+  for ((i=0; i<600; i++)); do
     temp="${spinstr#?}"
     printf " [%c]  " "$spinstr"
     spinstr="$temp${spinstr%"$temp"}"
