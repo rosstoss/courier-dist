@@ -7,6 +7,16 @@ COURIER_ROOT="$HOME/.courier"
 APP_DIR="$COURIER_ROOT/app"
 BIN_DIR="$COURIER_ROOT/bin"
 
+LATEST_RELEASE_URL="https://api.github.com/repos/$GITHUB_USER/$GITHUB_REPO/releases/latest"
+COURIER_VERSION="$(curl -fsSL "$LATEST_RELEASE_URL" 2>/dev/null \
+  | grep '"tag_name":' \
+  | head -1 \
+  | sed -E 's/.*"tag_name": *"v?([^"]+)".*/\1/' \
+  | tr -d '[:space:]')"
+if [ -z "$COURIER_VERSION" ]; then
+  COURIER_VERSION="1.2.12"
+fi
+
 CYAN=$'\033[1;36m'
 BLUE=$'\033[1;34m'
 RED=$'\033[0;31m'
@@ -28,12 +38,13 @@ spinner() {
 
 clear
 echo "${CYAN}"
-echo "      ______                  _         "
-echo "     / ____/___   __  _______(_)__  _____"
-echo "    / /   / __ \/ / / / ___/ / _ \/ ___/"
-echo "   / /___/ /_/ / /_/ / /  / /  __/ /     "
-echo "   \____/\____/\__,_/_/  /_/\___/_/      "
-echo "${BLUE}       INFRASTRUCTURE INSTALLER${NC}"
+echo " ██████╗ ██████╗ ██╗   ██╗██████╗ ██╗███████╗██████╗ "
+echo "██╔════╝██╔═══██╗██║   ██║██╔══██╗██║██╔════╝██╔══██╗"
+echo "██║     ██║   ██║██║   ██║██████╔╝██║█████╗  ██████╔╝"
+echo "██║     ██║   ██║██║   ██║██╔══██╗██║██╔══╝  ██╔══██╗"
+echo "╚██████╗╚██████╔╝╚██████╔╝██║  ██║██║███████╗██║  ██║"
+echo " ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝╚═╝  ╚═╝"
+echo "${BLUE}       INFRASTRUCTURE INSTALLER · v${COURIER_VERSION}${NC}"
 echo ""
 
 echo "${BLUE}[+]${NC} Checking System Compatibility..."
@@ -124,11 +135,13 @@ mv "${APP_DIR}_tmp" "$APP_DIR"
 export PATH="$BIN_DIR:$PATH"
 hash -r 2>/dev/null || true
 
+echo "$COURIER_VERSION" > "$COURIER_ROOT/VERSION"
+
 echo -n "${BLUE}[+]${NC} Finalizing Courier Engine installation. This may take a minute or two."
 (
   delay=0.1
   spinstr='|/-\\'
-  for ((i=0; i<600; i++)); do
+  for ((i=0; i<750; i++)); do
     temp="${spinstr#?}"
     printf " [%c]  " "$spinstr"
     spinstr="$temp${spinstr%"$temp"}"
