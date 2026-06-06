@@ -44,7 +44,7 @@ echo "██║     ██║   ██║██║   ██║██████
 echo "██║     ██║   ██║██║   ██║██╔══██╗██║██╔══╝  ██╔══██╗"
 echo "╚██████╗╚██████╔╝╚██████╔╝██║  ██║██║███████╗██║  ██║"
 echo " ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝╚═╝  ╚═╝"
-echo "${BLUE}       INFRASTRUCTURE INSTALLER · v${COURIER_VERSION}${NC}"
+echo "${BLUE}       COMMERCIAL EDITION INSTALLER · v${COURIER_VERSION}${NC}"
 echo ""
 
 echo "${BLUE}[+]${NC} Checking System Compatibility..."
