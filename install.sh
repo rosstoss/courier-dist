@@ -45,9 +45,11 @@ bar() {  # $1 pct  [$2 width] — accent block-char bar over a dim track
   filled=$(( pct * width / 100 ))
   if [ "$filled" -lt 0 ]; then filled=0; fi
   if [ "$filled" -gt "$width" ]; then filled=$width; fi
+
   out="$ACCENT"
   for (( i=0; i<width; i++ )); do
-    if [ "$i" -lt "$filled" ]; then out="$out█"; else out="$out$DIM░$ACCENT"; fi
+    if [ "$i" -eq "$filled" ]; then out="$out$DIM"; fi
+    out="$out█"
   done
   printf '%s%s' "$out" "$NC"
 }
