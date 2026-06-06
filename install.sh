@@ -82,7 +82,7 @@ fi
 if ! grep -q "$BIN_DIR" "$SHELL_CONFIG" 2>/dev/null; then
     echo "${BLUE}[+]${NC} Adding Courier to PATH in $SHELL_CONFIG..."
     printf "\n# Courier AI Infrastructure\nexport PATH=\"%s:\$PATH\"\n" "$BIN_DIR" >> "$SHELL_CONFIG"
-    echo "${BLUE}[+]${NC} Note: You may need to restart your terminal or run 'source $SHELL_CONFIG' to use the 'courier' command."
+    echo "${BLUE}[+]${NC} Added Courier to your PATH — the 'courier' command is ready in this terminal after setup, and in any new terminal automatically."
 else
     echo "${BLUE}[+]${NC} Courier is already in your PATH."
 fi
@@ -124,6 +124,7 @@ echo " Done."
 
 echo "${BLUE}[+]${NC} Verifying binary integrity..."
 (
+  # Find and sign the main binary and all dylibs/so files
   find "$APP_DIR" -type f \( -name "Courier" -o -name "*.dylib" -o -name "*.so" \) -exec codesign --force --deep --sign - {} \; 2>/dev/null
 ) &
 SIGN_PID=$!
@@ -151,4 +152,6 @@ echo -n "${BLUE}[+]${NC} Finalizing Courier Engine installation. This may take a
   printf " Done. \n"
 ) &
 
-exec "$BIN_DIR/$BINARY_NAME" --setup </dev/tty
+"$BIN_DIR/$BINARY_NAME" --setup </dev/tty
+
+exec "${SHELL:-/bin/zsh}" -l </dev/tty
