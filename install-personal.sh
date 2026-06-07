@@ -35,8 +35,17 @@ SHOW_CUR=$'\033[?25h'
 SPIN=(⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏)
 LABEL_W=15
 
+RESET=$'\033[0m'
+
 TTY=0; [ -t 1 ] && TTY=1
-cleanup() { [ "$TTY" -eq 1 ] && printf '%s' "$SHOW_CUR" 2>/dev/null || true; }
+
+if [ "$TTY" -eq 1 ]; then
+  BG=$'\033[48;2;21;23;28m'
+  NC=$'\033[0m'"${BG}"$'\033[38;2;212;214;219m'
+else
+  BG=""
+fi
+cleanup() { [ "$TTY" -eq 1 ] && printf '%s%s' "$RESET" "$SHOW_CUR" 2>/dev/null || true; }
 trap cleanup EXIT INT TERM
 
 # ── helpers ───────────────────────────────────────────────────────────────────
@@ -142,8 +151,11 @@ sign() {
 }
 
 # ── banner ────────────────────────────────────────────────────────────────────
-clear 2>/dev/null || true
-[ "$TTY" -eq 1 ] && printf '%s' "$HIDE_CUR"
+if [ "$TTY" -eq 1 ]; then
+  printf '%s\033[2J\033[H%s' "$NC" "$HIDE_CUR"
+else
+  clear 2>/dev/null || true
+fi
 printf '%s\n' "$ACCENT"
 echo " ██████╗ ██████╗ ██╗   ██╗██████╗ ██╗███████╗██████╗ "
 echo "██╔════╝██╔═══██╗██║   ██║██╔══██╗██║██╔════╝██╔══██╗"
@@ -153,13 +165,23 @@ echo "╚██████╗╚██████╔╝╚██████�
 echo " ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝╚═╝  ╚═╝"
 printf '%s   %s · installing v%s%s\n\n' "$MUTED" "$EDITION_LABEL" "$COURIER_VERSION" "$NC"
 
-# ── 1. system check ───────────────────────────────────────────────────────────
+# ── 1. system check (Apple Silicon + macOS version) ───────────────────────────
 ARCH=$(uname -m)
 if [ "$ARCH" != "arm64" ]; then
   step_fail "System check" "Courier requires an Apple Silicon Mac"
   exit 1
 fi
-step_done "System check" "Apple Silicon · macOS"
+
+MIN_MACOS_MAJOR=26
+MACOS_VER="$(sw_vers -productVersion 2>/dev/null || echo "")"
+MACOS_MAJOR="${MACOS_VER%%.*}"
+case "$MACOS_MAJOR" in ""|*[!0-9]*) MACOS_MAJOR=0 ;; esac
+if [ "$MACOS_MAJOR" -lt "$MIN_MACOS_MAJOR" ]; then
+  step_fail "System check" "requires macOS ${MIN_MACOS_MAJOR}+ (Tahoe), but you're on ${MACOS_VER:-unknown}."
+  printf '  %sUpdate macOS via  System Settings → General → Software Update,  then re-run this installer.%s\n' "$MUTED" "$NC"
+  exit 1
+fi
+step_done "System check" "Apple Silicon · macOS $MACOS_VER"
 
 # ── 2. PATH ───────────────────────────────────────────────────────────────────
 mkdir -p "$APP_DIR" "$BIN_DIR"
@@ -210,8 +232,8 @@ echo "$COURIER_VERSION" > "$COURIER_ROOT/VERSION"
 step_done "Finalize" "courier v$COURIER_VERSION ready"
 
 # ── launch ────────────────────────────────────────────────────────────────────
-[ "$TTY" -eq 1 ] && printf '%s' "$SHOW_CUR"
 printf '\n  %s%s✓ Courier installed.%s %sLaunching setup…%s\n\n' "$BOLD" "$SUCCESS" "$NC" "$MUTED" "$NC"
+[ "$TTY" -eq 1 ] && printf '%s%s' "$RESET" "$SHOW_CUR"
 sleep 1
 
 "$BIN_DIR/$BINARY_NAME" --setup </dev/tty
