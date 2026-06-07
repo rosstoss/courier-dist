@@ -40,7 +40,7 @@ cleanup() { [ "$TTY" -eq 1 ] && printf '%s' "$SHOW_CUR" 2>/dev/null || true; }
 trap cleanup EXIT INT TERM
 
 # ── helpers ───────────────────────────────────────────────────────────────────
-bar() {  # $1 pct  [$2 width] — accent block-char bar over a dim track
+bar() {
   local pct=${1:-0} width=${2:-18} filled i out=""
   filled=$(( pct * width / 100 ))
   if [ "$filled" -lt 0 ]; then filled=0; fi
