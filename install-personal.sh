@@ -6,6 +6,7 @@ set -e
 GITHUB_USER="rosstoss"
 GITHUB_REPO="courier-dist"
 BINARY_NAME="courier"
+REAL_BINARY="Courier OS"
 COURIER_ROOT="$HOME/.courier"
 APP_DIR="$COURIER_ROOT/app"
 BIN_DIR="$COURIER_ROOT/bin"
@@ -35,7 +36,7 @@ SHOW_CUR=$'\033[?25h'
 SPIN=(⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏)
 LABEL_W=15
 
-RESET=$'\033[0m'
+RESET=$'\033[0m'   # true reset — restores the user's terminal on exit/handoff
 
 TTY=0; [ -t 1 ] && TTY=1
 
@@ -136,7 +137,7 @@ extract() {
 # Ad-hoc codesign the binary + native libs with a per-file progress bar.
 sign() {
   local dir=$1 list total i=0 pct f
-  list=$(find "$dir" -type f \( -name "Courier" -o -name "*.dylib" -o -name "*.so" \) 2>/dev/null || true)
+  list=$(find "$dir" -type f \( -name "Courier OS" -o -name "*.dylib" -o -name "*.so" \) 2>/dev/null || true)
   total=$(printf '%s\n' "$list" | grep -c . 2>/dev/null || true); [ -z "$total" ] && total=0
   if [ "$total" -eq 0 ]; then return 0; fi
   while IFS= read -r f; do
@@ -209,6 +210,11 @@ if ! tar -tf "$TMP_TAR" >/dev/null 2>&1; then
   rm -f "$TMP_TAR"; exit 1
 fi
 
+if [ -f "$APP_DIR/Courier" ]; then
+  pkill -x Courier 2>/dev/null || true
+  rm -f "$APP_DIR/Courier"
+fi
+
 # ── 4. extract ────────────────────────────────────────────────────────────────
 if extract "$TMP_TAR" "$APP_DIR"; then
   step_done "Extract" "unpacked to ${APP_DIR/#$HOME/~}"
@@ -225,8 +231,8 @@ step_done "Verify" "signed for this Mac"
 
 # ── 6. finalize ───────────────────────────────────────────────────────────────
 [ -L "$BIN_DIR/$BINARY_NAME" ] && rm "$BIN_DIR/$BINARY_NAME"
-ln -sf "$APP_DIR/$BINARY_NAME" "$BIN_DIR/$BINARY_NAME"
-chmod +x "$APP_DIR/$BINARY_NAME"
+ln -sf "$APP_DIR/$REAL_BINARY" "$BIN_DIR/$BINARY_NAME"
+chmod +x "$APP_DIR/$REAL_BINARY"
 hash -r 2>/dev/null || true
 echo "$COURIER_VERSION" > "$COURIER_ROOT/VERSION"
 step_done "Finalize" "courier v$COURIER_VERSION ready"
