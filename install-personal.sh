@@ -169,7 +169,7 @@ printf '%s   %s · installing v%s%s\n\n' "$MUTED" "$EDITION_LABEL" "$COURIER_VER
 # ── 1. system check (Apple Silicon + macOS version) ───────────────────────────
 ARCH=$(uname -m)
 if [ "$ARCH" != "arm64" ]; then
-  step_fail "System check" "Courier requires an Apple Silicon Mac"
+  step_fail "System check" "Courier OS requires an Apple Silicon Mac"
   exit 1
 fi
 
@@ -235,10 +235,10 @@ ln -sf "$APP_DIR/$REAL_BINARY" "$BIN_DIR/$BINARY_NAME"
 chmod +x "$APP_DIR/$REAL_BINARY"
 hash -r 2>/dev/null || true
 echo "$COURIER_VERSION" > "$COURIER_ROOT/VERSION"
-step_done "Finalize" "courier v$COURIER_VERSION ready"
+step_done "Finalize" "courier os v$COURIER_VERSION ready"
 
 # ── launch ────────────────────────────────────────────────────────────────────
-printf '\n  %s%s✓ Courier installed.%s %sLaunching setup…%s\n\n' "$BOLD" "$SUCCESS" "$NC" "$MUTED" "$NC"
+printf '\n  %s%s✓ Courier OS installed.%s %sLaunching setup…%s\n\n' "$BOLD" "$SUCCESS" "$NC" "$MUTED" "$NC"
 [ "$TTY" -eq 1 ] && printf '%s%s' "$RESET" "$SHOW_CUR"
 sleep 1
 
