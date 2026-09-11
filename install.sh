@@ -6,10 +6,6 @@ set -e
 GITHUB_USER="rosstoss"
 GITHUB_REPO="courier-dist"
 BINARY_NAME="courier"
-# The compiled engine binary name inside the tarball. Renamed "Courier OS" →
-# "Courier"; this default is OVERRIDDEN after extract by detecting the real
-# name on disk, so the installer works whether the latest release still ships
-# the legacy "Courier OS" binary or the renamed "Courier" one.
 REAL_BINARY="Courier"
 LEGACY_BINARY="Courier OS"
 COURIER_ROOT="$HOME/.courier"
@@ -27,12 +23,12 @@ COURIER_VERSION="$(curl -fsSL "$LATEST_RELEASE_URL" 2>/dev/null \
 DOWNLOAD_URL="https://github.com/$GITHUB_USER/$GITHUB_REPO/releases/latest/download/$ASSET_NAME"
 TMP_TAR="/tmp/courier_download.tar.gz"
 
-ACCENT=$'\033[38;2;122;158;177m'   # #7a9eb1
-SUCCESS=$'\033[38;2;127;174;127m'  # #7fae7f
-ERRC=$'\033[38;2;201;122;122m'     # #c97a7a
-MUTED=$'\033[38;2;138;141;148m'    # #8a8d94
-DIM=$'\033[38;2;94;96;102m'        # #5e6066
-TEXT=$'\033[38;2;212;214;219m'     # #d4d6db
+ACCENT=$'\033[38;2;122;158;177m'
+SUCCESS=$'\033[38;2;127;174;127m'
+ERRC=$'\033[38;2;201;122;122m'
+MUTED=$'\033[38;2;138;141;148m'
+DIM=$'\033[38;2;94;96;102m'
+TEXT=$'\033[38;2;212;214;219m'
 BOLD=$'\033[1m'
 NC=$'\033[0m'
 CLR=$'\033[K'
@@ -41,7 +37,7 @@ SHOW_CUR=$'\033[?25h'
 SPIN=(⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏)
 LABEL_W=15
 
-RESET=$'\033[0m'   # true reset — restores the user's terminal on exit/handoff
+RESET=$'\033[0m'
 
 TTY=0; [ -t 1 ] && TTY=1
 
@@ -69,7 +65,7 @@ bar() {
   printf '%s%s' "$out" "$NC"
 }
 
-human() {  # $1 bytes -> human size
+human() {
   local b=${1:-0}
   if [ "$b" -ge 1073741824 ]; then
     printf '%d.%01d GB' $(( b / 1073741824 )) $(( b % 1073741824 * 10 / 1073741824 ))
@@ -215,9 +211,6 @@ if ! tar -tf "$TMP_TAR" >/dev/null 2>&1; then
   rm -f "$TMP_TAR"; exit 1
 fi
 
-# Stop any running instance before we replace the bundle — either the new
-# "Courier" name or the legacy "Courier OS" name (extract wipes $APP_DIR, so
-# the old binary files themselves are removed there).
 pkill -x "Courier" 2>/dev/null || true
 pkill -x "Courier OS" 2>/dev/null || true
 
@@ -230,11 +223,6 @@ else
 fi
 rm -f "$TMP_TAR"
 
-# Detect the real engine binary name in the extracted dist: prefer the new
-# "Courier", fall back to the legacy "Courier OS". This makes the installer
-# version-agnostic — it works whether /releases/latest still ships the old
-# binary or the renamed one, so merge timing of this script vs. the release
-# doesn't matter.
 if [ -f "$APP_DIR/$REAL_BINARY" ]; then
   :
 elif [ -f "$APP_DIR/$LEGACY_BINARY" ]; then
