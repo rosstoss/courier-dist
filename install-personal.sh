@@ -6,7 +6,12 @@ set -e
 GITHUB_USER="rosstoss"
 GITHUB_REPO="courier-dist"
 BINARY_NAME="courier"
-REAL_BINARY="Courier OS"
+# The compiled engine binary name inside the tarball. Renamed "Courier OS" →
+# "Courier"; this default is OVERRIDDEN after extract by detecting the real
+# name on disk, so the installer works whether the latest release still ships
+# the legacy "Courier OS" binary or the renamed "Courier" one.
+REAL_BINARY="Courier"
+LEGACY_BINARY="Courier OS"
 COURIER_ROOT="$HOME/.courier"
 APP_DIR="$COURIER_ROOT/app"
 BIN_DIR="$COURIER_ROOT/bin"
@@ -137,7 +142,7 @@ extract() {
 # Ad-hoc codesign the binary + native libs with a per-file progress bar.
 sign() {
   local dir=$1 list total i=0 pct f
-  list=$(find "$dir" -type f \( -name "Courier OS" -o -name "*.dylib" -o -name "*.so" \) 2>/dev/null || true)
+  list=$(find "$dir" -type f \( -name "Courier" -o -name "Courier OS" -o -name "*.dylib" -o -name "*.so" \) 2>/dev/null || true)
   total=$(printf '%s\n' "$list" | grep -c . 2>/dev/null || true); [ -z "$total" ] && total=0
   if [ "$total" -eq 0 ]; then return 0; fi
   while IFS= read -r f; do
@@ -169,7 +174,7 @@ printf '%s   %s · installing v%s%s\n\n' "$MUTED" "$EDITION_LABEL" "$COURIER_VER
 # ── 1. system check (Apple Silicon + macOS version) ───────────────────────────
 ARCH=$(uname -m)
 if [ "$ARCH" != "arm64" ]; then
-  step_fail "System check" "Courier OS requires an Apple Silicon Mac"
+  step_fail "System check" "Courier requires an Apple Silicon Mac"
   exit 1
 fi
 
@@ -210,10 +215,11 @@ if ! tar -tf "$TMP_TAR" >/dev/null 2>&1; then
   rm -f "$TMP_TAR"; exit 1
 fi
 
-if [ -f "$APP_DIR/Courier" ]; then
-  pkill -x Courier 2>/dev/null || true
-  rm -f "$APP_DIR/Courier"
-fi
+# Stop any running instance before we replace the bundle — either the new
+# "Courier" name or the legacy "Courier OS" name (extract wipes $APP_DIR, so
+# the old binary files themselves are removed there).
+pkill -x "Courier" 2>/dev/null || true
+pkill -x "Courier OS" 2>/dev/null || true
 
 # ── 4. extract ────────────────────────────────────────────────────────────────
 if extract "$TMP_TAR" "$APP_DIR"; then
@@ -223,6 +229,20 @@ else
   exit 1
 fi
 rm -f "$TMP_TAR"
+
+# Detect the real engine binary name in the extracted dist: prefer the new
+# "Courier", fall back to the legacy "Courier OS". This makes the installer
+# version-agnostic — it works whether /releases/latest still ships the old
+# binary or the renamed one, so merge timing of this script vs. the release
+# doesn't matter.
+if [ -f "$APP_DIR/$REAL_BINARY" ]; then
+  :
+elif [ -f "$APP_DIR/$LEGACY_BINARY" ]; then
+  REAL_BINARY="$LEGACY_BINARY"
+else
+  step_fail "Extract" "engine binary not found in archive (expected '$REAL_BINARY' or '$LEGACY_BINARY')"
+  exit 1
+fi
 
 # ── 5. verify (quarantine + codesign) ─────────────────────────────────────────
 xattr -dr com.apple.quarantine "$APP_DIR" 2>/dev/null || true
@@ -235,10 +255,10 @@ ln -sf "$APP_DIR/$REAL_BINARY" "$BIN_DIR/$BINARY_NAME"
 chmod +x "$APP_DIR/$REAL_BINARY"
 hash -r 2>/dev/null || true
 echo "$COURIER_VERSION" > "$COURIER_ROOT/VERSION"
-step_done "Finalize" "courier os v$COURIER_VERSION ready"
+step_done "Finalize" "courier v$COURIER_VERSION ready"
 
 # ── launch ────────────────────────────────────────────────────────────────────
-printf '\n  %s%s✓ Courier OS installed.%s %sLaunching setup…%s\n\n' "$BOLD" "$SUCCESS" "$NC" "$MUTED" "$NC"
+printf '\n  %s%s✓ Courier installed.%s %sLaunching setup…%s\n\n' "$BOLD" "$SUCCESS" "$NC" "$MUTED" "$NC"
 [ "$TTY" -eq 1 ] && printf '%s%s' "$RESET" "$SHOW_CUR"
 sleep 1
 
